@@ -28,7 +28,7 @@ public class InteractionType : MonoBehaviour
 
     [Header("Choose Radio")]
     public AudioSource audioSource;
-    [Range(1, 4)] public int channel = 1;
+    private int currentChannel = 0; // Tracks the current song index
     public AudioClip[] radioClips = new AudioClip[4];
 
     [Header("Toggle Object")]
@@ -87,9 +87,11 @@ public class InteractionType : MonoBehaviour
                 break;
 
             case Interaction.ChooseRadio:
-                if (audioSource != null && radioClips.Length >= channel)
+                if (audioSource != null && radioClips.Length > 0)
                 {
-                    audioSource.clip = radioClips[channel - 1];
+                    // Cycle to the next song
+                    currentChannel = (currentChannel + 1) % radioClips.Length;
+                    audioSource.clip = radioClips[currentChannel];
                     audioSource.Play();
                 }
                 break;

@@ -16,21 +16,14 @@ public class WindowOpener : MonoBehaviour
     [Header("Sound")]
     public AudioSource audioSource;
     public AudioClip openSound;
-    public AudioClip jumpScareSound; // Sound for jump scare
 
     [Header("Timer Settings")]
-    public float delayBetweenSequences = 10f;
-    public float jumpScareTimerDuration = 10f; // 10-second timer for jump scare
+    public float delayBetweenSequences = 10f; // Changed to 10 seconds
     [SerializeField] private float debugTimer = 0f;
-    [SerializeField] private float jumpScareTimer = 0f;
-
-    [Header("Jump Scare")]
-    public GameObject jumpScareObject; // Canvas object to activate
 
     private Vector3 initialWindowPos;
     private float moveProgress = 0f;
     private bool waitingToRestart = false;
-    private bool jumpScareTimerActive = false;
 
     private enum State
     {
@@ -46,7 +39,7 @@ public class WindowOpener : MonoBehaviour
     {
         if (interactionScript != null && interactionScript.windowObject != null)
         {
-            interactionScript.isWindowOpen = false;
+            interactionScript.isWindowOpen = false; // Force it closed at start
             initialWindowPos = interactionScript.windowObject.localPosition;
         }
 
@@ -54,16 +47,11 @@ public class WindowOpener : MonoBehaviour
         {
             handObject.transform.position = pointB.position;
         }
-
-        if (jumpScareObject != null)
-        {
-            jumpScareObject.SetActive(false); // Ensure jump scare object is inactive
-        }
     }
 
     void Update()
     {
-        // Handle sequence timer and restart on window close
+        // Start the timer when the window is closed and idle
         if (!interactionScript.isWindowOpen && !waitingToRestart && currentState == State.Idle)
         {
             waitingToRestart = true;
@@ -73,67 +61,37 @@ public class WindowOpener : MonoBehaviour
         if (waitingToRestart)
         {
             debugTimer += Time.deltaTime;
+
             if (debugTimer >= delayBetweenSequences)
             {
-                StartOpeningSequence();
+                debugTimer = 0f;
+                waitingToRestart = false;
+                moveProgress = 0f;
+                initialWindowPos = interactionScript.windowObject.localPosition; // Update to new position
+                currentState = State.HandToA;
+
+                if (audioSource && openSound)
+                    audioSource.PlayOneShot(openSound);
             }
         }
 
-        // Restart opening sequence immediately if window closes
-        if (!interactionScript.isWindowOpen && (currentState != State.Idle || jumpScareTimerActive))
-        {
-            StartOpeningSequence();
-        }
-
-        // Handle jump scare timer
-        if (interactionScript.isWindowOpen && !jumpScareTimerActive)
-        {
-            jumpScareTimerActive = true;
-            jumpScareTimer = jumpScareTimerDuration; // Start 10-second timer
-        }
-
-        if (jumpScareTimerActive)
-        {
-            jumpScareTimer -= Time.deltaTime;
-            if (jumpScareTimer <= 0f && interactionScript.isWindowOpen)
-            {
-                TriggerJumpScare();
-                jumpScareTimerActive = false;
-            }
-        }
-
-        // Handle state machine
         switch (currentState)
         {
             case State.HandToA:
                 MoveHand(pointB.position, pointA.position, handToADuration, State.WindowUp);
                 break;
+
             case State.WindowUp:
                 MoveWindowAndHandUp(windowLiftDuration, State.HandBackToB);
                 break;
+
             case State.HandBackToB:
                 MoveHand(handObject.transform.position, pointB.position, handBackToBDuration, State.Idle);
                 break;
+
             case State.Idle:
-                break;
+                break; // isWindowOpen set in MoveWindowAndHandUp
         }
-    }
-
-    private void StartOpeningSequence()
-    {
-        debugTimer = 0f;
-        waitingToRestart = false;
-        moveProgress = 0f;
-        jumpScareTimerActive = false; // Reset jump scare timer
-        jumpScareTimer = 0f;
-        if (interactionScript != null && interactionScript.windowObject != null)
-        {
-            initialWindowPos = interactionScript.windowObject.localPosition;
-        }
-        currentState = State.HandToA;
-
-        if (audioSource && openSound)
-            audioSource.PlayOneShot(openSound);
     }
 
     private void MoveHand(Vector3 from, Vector3 to, float duration, State nextState)
@@ -152,9 +110,12 @@ public class WindowOpener : MonoBehaviour
     private void MoveWindowAndHandUp(float duration, State nextState)
     {
         moveProgress += Time.deltaTime / duration;
+
         float liftAmount = interactionScript.windowLowerAmount;
+
         Vector3 windowFrom = initialWindowPos;
         Vector3 windowTo = windowFrom + new Vector3(0, liftAmount, 0);
+
         Vector3 handFrom = pointA.position;
         Vector3 handTo = handFrom + new Vector3(0, liftAmount, 0);
 
@@ -165,21 +126,9 @@ public class WindowOpener : MonoBehaviour
         {
             interactionScript.windowObject.localPosition = windowTo;
             handObject.transform.position = handTo;
-            interactionScript.isWindowOpen = true;
+            interactionScript.isWindowOpen = true; // Set bool to true when opening completes
             moveProgress = 0f;
             currentState = nextState;
-        }
-    }
-
-    private void TriggerJumpScare()
-    {
-        if (jumpScareObject != null)
-        {
-            jumpScareObject.SetActive(true);
-        }
-        if (audioSource && jumpScareSound)
-        {
-            audioSource.PlayOneShot(jumpScareSound);
         }
     }
 }

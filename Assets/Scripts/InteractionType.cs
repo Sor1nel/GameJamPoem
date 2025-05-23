@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class InteractionType : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class InteractionType : MonoBehaviour
         ChooseRadio,
         ToggleObject
     }
+    
 
     public Interaction interactionType;
 
@@ -35,6 +37,8 @@ public class InteractionType : MonoBehaviour
     public GameObject toggleTarget;
     private bool toggleState = true;
 
+
+
     private Camera mainCam;
 
     private bool isMovingCamera = false;
@@ -58,14 +62,21 @@ public class InteractionType : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        if (isMovingCamera)
-            MoveCameraWithBob();
+        private void Update()
+        {
+            if (isMovingCamera)
+                MoveCameraWithBob();
 
-        if (isClosingWindow)
-            CloseWindowSmoothly();
-    }
+            if (isClosingWindow)
+            {
+                CloseWindowSmoothly();
+            }
+
+            
+        
+        }
+
+   
 
     public void TriggerInteraction()
     {

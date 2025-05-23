@@ -15,6 +15,7 @@ public class ClickInteractor : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0)) // Left-click
         {
+            // Ray from camera through mouse position into world
             Ray ray = mainCam.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, interactableLayer))
             {

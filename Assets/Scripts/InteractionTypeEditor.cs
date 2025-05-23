@@ -7,7 +7,6 @@ public class InteractionTypeEditor : Editor
     public override void OnInspectorGUI()
     {
         InteractionType script = (InteractionType)target;
-
         serializedObject.Update();
 
         EditorGUILayout.PropertyField(serializedObject.FindProperty("interactionType"));
@@ -18,11 +17,18 @@ public class InteractionTypeEditor : Editor
         {
             case InteractionType.Interaction.MoveThere:
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("moveTarget"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("moveSpeed"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("bobFrequency"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("bobAmplitude"));
                 break;
 
             case InteractionType.Interaction.CloseWindow:
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("windowObject"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("openDistance"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("windowLowerAmount"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("windowCloseSpeed"));
+
+               
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("isWindowOpen"));
                 break;
 
             case InteractionType.Interaction.ChooseRadio:

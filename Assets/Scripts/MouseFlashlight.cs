@@ -14,12 +14,19 @@ public class MouseFlashlight : MonoBehaviour
     [Header("Model Rotation Settings")]
     [SerializeField] private bool smoothModelAim = true;
     [SerializeField] private float modelAimSpeed = 5f;
-    [SerializeField] private Vector3 modelRotationOffset = Vector3.zero; // <<<< NEW
+    [SerializeField] private Vector3 modelRotationOffset = Vector3.zero;
 
     [Header("Flashlight Control")]
     [SerializeField] private bool toggleWithF = true;
 
     private bool flashlightOn = true;
+
+    private Ray GetRayFromRenderCamera()
+    {
+        Vector3 mousePos = Input.mousePosition;
+        Vector3 viewportPoint = new Vector3(mousePos.x / Screen.width, mousePos.y / Screen.height, 0f);
+        return cam.ViewportPointToRay(viewportPoint);
+    }
 
     private void Start()
     {
@@ -48,7 +55,11 @@ public class MouseFlashlight : MonoBehaviour
 
     private void AimFlashlightAndModel()
     {
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = cam.nearClipPlane;
+        Vector3 worldMousePos = cam.ScreenToWorldPoint(mousePos);
+
+        Ray ray = GetRayFromRenderCamera();
         RaycastHit hit;
         Vector3 targetPoint;
 
@@ -61,14 +72,12 @@ public class MouseFlashlight : MonoBehaviour
             targetPoint = ray.origin + ray.direction * maxDistance;
         }
 
-        // Aim the spotlight
         flashlight.transform.LookAt(targetPoint);
 
-        // Aim the model with offset
         if (flashlightModel != null)
         {
             Quaternion targetRotation = Quaternion.LookRotation(targetPoint - flashlightModel.position);
-            targetRotation *= Quaternion.Euler(modelRotationOffset); // <<< Apply rotation fix
+            targetRotation *= Quaternion.Euler(modelRotationOffset);
 
             if (smoothModelAim)
             {

@@ -10,7 +10,7 @@ public class JumpscareManager : MonoBehaviour
     public bool isMovingCamera = false;
     public bool isClosingWindow = false;
 
-    private bool hasTriggeredJumpScare = false;
+  
 
     private void Update()
     {
@@ -20,16 +20,16 @@ public class JumpscareManager : MonoBehaviour
         if (isClosingWindow)
             CloseWindowSmoothly();
 
-        if (interaction != null && interaction.isWindowOpen && !hasTriggeredJumpScare)
+        if (interaction != null && interaction.isWindowOpen)
         {
             StartCoroutine(JumpScare());
-            hasTriggeredJumpScare = true;
+            
         }
     }
 
     IEnumerator JumpScare()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(15f);
         jumpscare.SetActive(true);
 
         if (jumpscareAudio != null && jumpscareAudio.clip != null)
@@ -43,11 +43,8 @@ public class JumpscareManager : MonoBehaviour
             yield return new WaitForSeconds(2f);
         }
 
-        Application.Quit();
-
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#endif
+        jumpscare.SetActive(false);
+        //Application.Quit();
     }
 
     // Placeholder methods – implement your own logic
